@@ -12,6 +12,8 @@ import elemental.json.JsonArray;
 import java.sql.Time;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Base64;
 import java.util.TimeZone;
@@ -23,6 +25,7 @@ public class MyUI extends UI {
     private VerticalLayout verticalLayout;
     private Label header;
     private Label inform;
+    private static  final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss");
 
     @Override
     protected void init(VaadinRequest vaadinRequest) {
@@ -64,12 +67,16 @@ public class MyUI extends UI {
 
         givMeTimeZoneServer.addClickListener(clickEvent -> {
             TimeZone timeZone = TimeZone.getTimeZone(ZoneId.systemDefault());
-            DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
             inform.setValue("<h2>"+"Время сервера :" + dateTimeFormatter.format(LocalDateTime.now(ZoneId.systemDefault()) )+ " GMT ± " + (timeZone.getRawOffset() / 1000 / 3600)+ timeZone.getID()+"</h2>");
         });
 
         givMeTimeZone.addClickListener(clickEvent -> {
-            JavaScript.getCurrent().execute("givMeTime(Date())");
+            int timeOffsetMil =  Page.getCurrent().getWebBrowser().getTimezoneOffset() / 1000;
+            ZoneOffset zoneOffset = ZoneOffset.ofTotalSeconds(timeOffsetMil);
+            LocalDateTime localDateTime = LocalDateTime.now(zoneOffset);
+
+            inform.setValue("<h2>"+"Часовой пояс : " + dateTimeFormatter.format(localDateTime) +"</h2>");
+//            JavaScript.getCurrent().execute("givMeTime(Date())");
         });
 
         JavaScript.getCurrent().addFunction("givMeTime", new JavaScriptFunction() {
